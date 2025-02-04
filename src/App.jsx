@@ -7,6 +7,8 @@ import Jewelry from "./pages/Jewelry";
 import Paintings from "./pages/Paintings";
 import Contact from "./pages/Contact";
 import ArtworkDetail from "./pages/ArtworkDetail";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
             <Route path="/paintings" element={<Paintings />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/artwork/:id" element={<ArtworkDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </main>
       </div>
