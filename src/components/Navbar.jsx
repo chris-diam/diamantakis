@@ -43,7 +43,7 @@ const Navbar = () => {
         <div className="flex justify-center py-6">
           <Link to="/" className="w-32">
             <img
-              src="/src/assets/d.png"
+              src="/src/assets/d.jpeg"
               alt="Diamantakis Art Gallery"
               className="w-full"
             />
@@ -77,12 +77,6 @@ const Navbar = () => {
             >
               Paintings
             </Link>
-            {/* <Link
-              to="/contact"
-              className="text-[#4A3F35] hover:text-[#C5B073] transition-colors"
-            >
-              Contact
-            </Link> */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,12 +117,6 @@ const Navbar = () => {
                 >
                   Paintings
                 </Link>
-                {/* <Link
-                  to="/contact"
-                  className="text-[#4A3F35] hover:text-[#C5B073]"
-                >
-                  Contact
-                </Link> */}
               </div>
             </div>
           )}
