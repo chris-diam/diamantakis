@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Search, User, Heart, ShoppingBag } from "lucide-react";
+import logo from "../assets/d.jpeg";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,11 +43,7 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex justify-center py-6">
           <Link to="/" className="w-32">
-            <img
-              src="/src/assets/d.jpeg"
-              alt="Diamantakis Art Gallery"
-              className="w-full"
-            />
+            <img src={logo} alt="Diamantakis Art Gallery" className="w-full" />
           </Link>
         </div>
 
