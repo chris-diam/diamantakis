@@ -11,8 +11,8 @@ const useArtworks = (category = null) => {
       try {
         const url =
           category && category !== "all"
-            ? `http://localhost:5000/api/v1/artworks?category=${category}`
-            : "http://localhost:5000/api/v1/artworks";
+            ? `https://diamantakis-server.onrender.com/api/v1/artworks?category=${category}`
+            : "https://diamantakis-server.onrender.com/api/v1/artworks";
 
         const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch artworks");
