@@ -1,3 +1,4 @@
+// src/components/ArtworkCard.jsx
 import React from "react";
 
 const ArtworkCard = ({ artwork }) => {
@@ -16,11 +17,6 @@ const ArtworkCard = ({ artwork }) => {
         <h3 className="font-semibold text-lg text-gray-800">{artwork.title}</h3>
         <p className="text-sm text-gray-600">{artwork.description}</p>
         <p className="text-amber-700 font-medium">€{artwork.price}</p>
-        {artwork.materials && artwork.materials.length > 0 && (
-          <p className="text-sm text-gray-500">
-            Materials: {artwork.materials.join(", ")}
-          </p>
-        )}
       </div>
     </div>
   );
