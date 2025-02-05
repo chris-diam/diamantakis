@@ -1,17 +1,47 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../services/authService";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     remember: false,
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login data:", formData);
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await login({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.token) {
+        // Store token
+        localStorage.setItem("token", response.token);
+
+        // Store email in localStorage if "remember me" is checked
+        if (formData.remember) {
+          localStorage.setItem("rememberedEmail", formData.email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+
+        // Redirect to home page
+        navigate("/");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -20,6 +50,12 @@ const Login = () => {
         <h1 className="text-2xl font-semibold text-center text-[#4A3F35] mb-6">
           Login
         </h1>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -76,9 +112,12 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#C5B073] text-white py-2 px-4 rounded-md hover:bg-[#4A3F35] transition-colors"
+            disabled={loading}
+            className={`w-full bg-[#C5B073] text-white py-2 px-4 rounded-md hover:bg-[#4A3F35] transition-colors ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Sign in
+            {loading ? "Signing in..." : "Sign in"}
           </button>
 
           <div className="text-center mt-4">

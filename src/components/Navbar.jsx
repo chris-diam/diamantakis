@@ -1,10 +1,67 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Search, User, Heart, ShoppingBag } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Menu,
+  X,
+  Search,
+  User,
+  Heart,
+  ShoppingBag,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import logoImage from "../assets/d.jpeg";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const AccountSection = () => {
+    if (user) {
+      return (
+        <div className="relative group">
+          <Link
+            to="/profile"
+            className="flex items-center text-[#4A3F35] hover:text-[#C5B073]"
+          >
+            <User size={16} className="mr-1" />
+            <span>{user.displayName || user.name}</span>
+          </Link>
+          <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white border border-[#E5DED5] rounded-md shadow-lg py-1 z-50">
+            <Link
+              to="/profile"
+              className="block px-4 py-2 text-sm text-[#4A3F35] hover:bg-[#E5DED5]"
+            >
+              Profile Settings
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2 text-sm text-[#4A3F35] hover:bg-[#E5DED5] flex items-center"
+            >
+              <LogOut size={16} className="mr-2" />
+              Logout
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        to="/login"
+        className="flex items-center text-[#4A3F35] hover:text-[#C5B073]"
+      >
+        <User size={16} className="mr-1" />
+        <span>My Account</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="relative">
@@ -18,22 +75,18 @@ const Navbar = () => {
         <div className="hidden sm:flex justify-between items-center py-4 text-sm">
           <div className="flex items-center space-x-6">
             <span className="text-[#4A3F35]">Boutiques</span>
-            <span className="text-[#4A3F35]">Contact Us</span>
+            <Link to="/contact" className="text-[#4A3F35] hover:text-[#C5B073]">
+              Contact Us
+            </Link>
             <Search size={16} className="cursor-pointer text-[#4A3F35]" />
           </div>
           <div className="flex items-center space-x-6">
-            <Link
-              to="/login"
-              className="flex items-center text-[#4A3F35] hover:text-[#C5B073]"
-            >
-              <User size={16} className="mr-1" />
-              <span>My Account</span>
-            </Link>
-            <div className="flex items-center text-[#4A3F35]">
+            <AccountSection />
+            <div className="flex items-center text-[#4A3F35] hover:text-[#C5B073] cursor-pointer">
               <Heart size={16} className="mr-1" />
               <span>My Wishlist</span>
             </div>
-            <div className="flex items-center text-[#4A3F35]">
+            <div className="flex items-center text-[#4A3F35] hover:text-[#C5B073] cursor-pointer">
               <ShoppingBag size={16} className="mr-1" />
               <span>Shopping Bag (0)</span>
             </div>
@@ -51,9 +104,15 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             <Search size={20} className="text-[#4A3F35]" />
-            <Link to="/login" className="text-[#4A3F35]">
-              <User size={20} />
-            </Link>
+            {user ? (
+              <Link to="/profile" className="text-[#4A3F35]">
+                <User size={20} />
+              </Link>
+            ) : (
+              <Link to="/login" className="text-[#4A3F35]">
+                <User size={20} />
+              </Link>
+            )}
             <ShoppingBag size={20} className="text-[#4A3F35]" />
           </div>
         </div>
@@ -143,13 +202,36 @@ const Navbar = () => {
                 >
                   Paintings
                 </Link>
-                <Link
-                  to="/login"
-                  className="text-[#4A3F35] py-2 border-b border-[#E5DED5]"
-                  onClick={() => setIsOpen(false)}
-                >
-                  My Account
-                </Link>
+
+                {user ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="text-[#4A3F35] py-2 border-b border-[#E5DED5]"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Profile Settings ({user.displayName || user.name})
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="text-[#4A3F35] py-2 border-b border-[#E5DED5] text-left"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="text-[#4A3F35] py-2 border-b border-[#E5DED5]"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    My Account
+                  </Link>
+                )}
+
                 <div className="text-[#4A3F35] py-2 border-b border-[#E5DED5]">
                   My Wishlist
                 </div>
@@ -158,7 +240,7 @@ const Navbar = () => {
                   className="text-[#4A3F35] py-2 border-b border-[#E5DED5]"
                   onClick={() => setIsOpen(false)}
                 >
-                  Contact us
+                  Contact Us
                 </Link>
                 <div className="text-[#4A3F35] py-2 border-b border-[#E5DED5]">
                   Boutiques

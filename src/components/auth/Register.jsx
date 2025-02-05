@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../../services/authService";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,10 +17,68 @@ const Register = () => {
     gdprConsent: false,
   });
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.username || formData.username.trim() === "") {
+      setError("Username is required");
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return false;
+    }
+
+    // Basic username validation
+    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      setError("Username can only contain letters, numbers, and underscores");
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log("Registration data:", formData);
+    setError("");
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+        displayName:
+          formData.displayName || `${formData.firstName} ${formData.lastName}`,
+      };
+
+      const response = await register(userData);
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        navigate("/");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +87,12 @@ const Register = () => {
         <h1 className="text-2xl font-semibold text-center text-[#4A3F35] mb-6">
           Register
         </h1>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -60,6 +128,23 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
+              Username
+            </label>
+            <input
+              type="text"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-[#E5DED5] rounded-md shadow-sm focus:outline-none focus:ring-[#C5B073] focus:border-[#C5B073]"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value.trim() })
+              }
+              pattern="^[a-zA-Z0-9_]+$"
+              title="Username can only contain letters, numbers, and underscores"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#4A3F35]">
               Display Name
             </label>
             <input
@@ -74,21 +159,6 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Username
-            </label>
-            <input
-              type="text"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-[#E5DED5] rounded-md shadow-sm focus:outline-none focus:ring-[#C5B073] focus:border-[#C5B073]"
-              value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#4A3F35]">
               Email
             </label>
             <input
@@ -97,7 +167,7 @@ const Register = () => {
               className="mt-1 block w-full px-3 py-2 border border-[#E5DED5] rounded-md shadow-sm focus:outline-none focus:ring-[#C5B073] focus:border-[#C5B073]"
               value={formData.email}
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setFormData({ ...formData, email: e.target.value.trim() })
               }
             />
           </div>
@@ -109,6 +179,7 @@ const Register = () => {
             <input
               type="password"
               required
+              minLength={8}
               className="mt-1 block w-full px-3 py-2 border border-[#E5DED5] rounded-md shadow-sm focus:outline-none focus:ring-[#C5B073] focus:border-[#C5B073]"
               value={formData.password}
               onChange={(e) =>
@@ -150,9 +221,12 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#C5B073] text-white py-2 px-4 rounded-md hover:bg-[#4A3F35] transition-colors"
+            disabled={loading}
+            className={`w-full bg-[#C5B073] text-white py-2 px-4 rounded-md hover:bg-[#4A3F35] transition-colors ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
 
           <div className="text-center mt-4">
