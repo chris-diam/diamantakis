@@ -6,33 +6,9 @@ import pouliaImage from "../assets/poulia.jpeg";
 import karaviImage from "../assets/karavi.jpeg";
 
 const Gallery = () => {
-  const galleryItems = [
-    {
-      id: 1,
-      image: arxaioImage,
-      title: "Ancient Jewelry Collection",
-      description: "Discover our unique pieces",
-      link: "/jewelry",
-      featured: true,
-    },
-    {
-      id: 2,
-      image: eliaImage,
-      title: "Olive Collection",
-      description: "Inspired by nature",
-      link: "/sculptures",
-    },
-    {
-      id: 3,
-      image: pouliaImage,
-      title: "Birds Collection",
-      description: "Freedom in design",
-      link: "/jewelry",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-stone-50">
+      {/* Hero Section */}
       <div
         className="h-screen bg-cover bg-center bg-no-repeat relative"
         style={{
@@ -51,48 +27,79 @@ const Gallery = () => {
           </div>
         </div>
       </div>
-      {/* Gallery Grid */}
+
+      {/* Gallery Grid with masonry-like layout */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Featured Item - Full width on smaller screens, 2 columns on md+ */}
-          <div className="md:col-span-2 relative group">
-            <Link to={galleryItems[0].link} className="block">
-              <div className="relative overflow-hidden rounded-lg">
+        {/* First Row */}
+        <div className="grid grid-cols-2 gap-8 mb-16">
+          <div className="relative group">
+            <Link to="/jewelry" className="block">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
                 <img
-                  src={galleryItems[0].image}
-                  alt={galleryItems[0].title}
-                  className="w-full h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                  src={arxaioImage}
+                  alt="The Beauty of Rings"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <h3 className="text-2xl font-light mb-2">
-                    {galleryItems[0].title}
-                  </h3>
-                  <p className="text-sm">{galleryItems[0].description}</p>
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-[#4A3F35] bg-white/90 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-light">THE BEAUTY OF RINGS</h3>
+                  <p className="text-sm mt-2">DISCOVER THE COLLECTION</p>
                 </div>
               </div>
             </Link>
           </div>
-
-          {/* Regular Items */}
-          {galleryItems.slice(1).map((item) => (
-            <div key={item.id} className="relative group">
-              <Link to={item.link} className="block">
-                <div className="relative overflow-hidden rounded-lg">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-xl font-light mb-2">{item.title}</h3>
-                    <p className="text-sm">{item.description}</p>
-                  </div>
+          <div className="relative group mt-16">
+            <Link to="/jewelry" className="block">
+              <div className="relative aspect-square overflow-hidden rounded-lg">
+                <img
+                  src={eliaImage}
+                  alt="2025 Good Luck Charm"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-[#4A3F35] bg-white/90 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-light">2025 GOOD LUCK CHARM</h3>
+                  <p className="text-sm mt-2">THE BLOSSOM ROSETTE</p>
                 </div>
-              </Link>
-            </div>
-          ))}
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Second Row */}
+        <div className="grid grid-cols-2 gap-8">
+          <div className="relative group -mt-32">
+            <Link to="/jewelry" className="block">
+              <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
+                <img
+                  src={pouliaImage}
+                  alt="Bird Collection"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-[#4A3F35] bg-white/90 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-light">BIRD COLLECTION</h3>
+                  <p className="text-sm mt-2">DISCOVER MORE</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+          <div className="relative group mt-16">
+            <Link to="/jewelry" className="block">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
+                <img
+                  src={arxaioImage}
+                  alt="Ancient Collection"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-[#4A3F35] bg-white/90 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-light">ANCIENT COLLECTION</h3>
+                  <p className="text-sm mt-2">EXPLORE MORE</p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
