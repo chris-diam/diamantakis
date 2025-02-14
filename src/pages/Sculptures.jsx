@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import ArtworkCard from "../components/ArtworkCard";
 import poulia from "../assets/poulia.jpeg";
 import useArtworks from "../hooks/useArtworks";
@@ -37,7 +37,7 @@ const Sculptures = () => {
           {artworks.map((artwork) => (
             <div
               key={artwork._id}
-              className="bg-white/80 rounded-lg backdrop-blur-sm p-2 sm:p-4"
+              className="bg-white/80 rounded-lg backdrop-blur-sm p-2 sm:p-4 hover:shadow-lg transition-shadow duration-300"
             >
               <ArtworkCard artwork={artwork} />
             </div>
@@ -55,4 +55,5 @@ const Sculptures = () => {
     </div>
   );
 };
+
 export default Sculptures;

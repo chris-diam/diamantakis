@@ -1,127 +1,182 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+// src/pages/ArtworkDetail.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Heart, ShoppingBag, Check } from "lucide-react";
+import { useShop } from "../context/ShopContext";
+import { useAuth } from "../context/AuthContext";
 
-const ArtworkDetail = ({ artwork }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+const ArtworkDetail = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addToCart, addToWishlist, cart, wishlist } = useShop();
+  const [artwork, setArtwork] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
 
-  const { title, description, price, category, images, materials, dimensions } =
-    artwork;
+  useEffect(() => {
+    const fetchArtwork = async () => {
+      try {
+        const response = await fetch(
+          `https://diamantakis-server.onrender.com/api/v1/artworks/${id}`
+        );
+        if (!response.ok) throw new Error("Artwork not found");
+        const data = await response.json();
+        setArtwork(data.data.artwork);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        // Check if item is already in cart or wishlist
+        setAddedToCart(cart.some((item) => item._id === id));
+        setAddedToWishlist(wishlist.some((item) => item._id === id));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtwork();
+  }, [id, cart, wishlist]);
+
+  const handleAddToCart = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    addToCart(artwork);
+    setAddedToCart(true);
+    // Show temporary success message
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  const handleAddToWishlist = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    addToWishlist(artwork);
+    setAddedToWishlist(true);
+    // Show temporary success message
+    setTimeout(() => setAddedToWishlist(false), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error || !artwork) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-600">
+          Error: {error || "Artwork not found"}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-6 text-stone-600 hover:text-amber-700 transition-colors flex items-center"
-      >
-        <ChevronLeft size={20} /> Back
-      </button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Image Gallery */}
-        <div className="relative">
-          <div className="aspect-square rounded-lg overflow-hidden bg-stone-100">
-            <img
-              src={images[currentImageIndex]}
-              alt={`${title} view ${currentImageIndex + 1}`}
-              className="w-full h-full object-contain"
-            />
-          </div>
-
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
-              >
-                <ChevronRight size={24} />
-              </button>
-            </>
-          )}
-
-          {/* Thumbnail Navigation */}
-          {images.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-              {images.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden ${
-                    currentImageIndex === index ? "ring-2 ring-amber-700" : ""
-                  }`}
-                >
-                  <img
-                    src={img}
-                    alt={`${title} thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Details */}
-        <div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-4">{title}</h1>
-          <p className="text-2xl text-amber-700 font-semibold mb-6">
-            ${price?.toLocaleString()}
-          </p>
-
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold text-stone-800 mb-2">
-                Description
-              </h2>
-              <p className="text-stone-600">{description}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-stone-800 mb-2">
-                  Category
-                </h2>
-                <p className="text-stone-600 capitalize">{category}</p>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold text-stone-800 mb-2">
-                  Materials
-                </h2>
-                <p className="text-stone-600">{materials.join(", ")}</p>
+    <div className="min-h-screen bg-stone-50 py-12">
+      <div className="container mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="md:flex">
+            {/* Image Section */}
+            <div className="md:w-1/2">
+              <div className="relative h-96 md:h-full">
+                <img
+                  src={`data:${artwork.images[0].contentType};base64,${artwork.images[0].data}`}
+                  alt={artwork.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
-            {dimensions && (
-              <div>
-                <h2 className="text-lg font-semibold text-stone-800 mb-2">
-                  Dimensions
-                </h2>
-                <p className="text-stone-600">
-                  {dimensions.height}H × {dimensions.width}W ×{" "}
-                  {dimensions.depth}D cm
+            {/* Details Section */}
+            <div className="md:w-1/2 p-8">
+              <div className="mb-8">
+                <h1 className="text-3xl font-light text-[#4A3F35] mb-4">
+                  {artwork.title}
+                </h1>
+                <p className="text-gray-600 mb-4">{artwork.description}</p>
+                <p className="text-2xl text-[#C5B073] font-light">
+                  €{artwork.price}
                 </p>
               </div>
-            )}
 
-            <button className="w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-colors">
-              Inquire About This Piece
-            </button>
+              {/* Materials & Dimensions */}
+              {artwork.materials && artwork.materials.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-[#4A3F35] mb-2">
+                    Materials
+                  </h3>
+                  <p className="text-gray-600">
+                    {artwork.materials.join(", ")}
+                  </p>
+                </div>
+              )}
+
+              {artwork.dimensions && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-medium text-[#4A3F35] mb-2">
+                    Dimensions
+                  </h3>
+                  <p className="text-gray-600">
+                    {artwork.dimensions.width &&
+                      `Width: ${artwork.dimensions.width}cm`}
+                    {artwork.dimensions.height &&
+                      ` | Height: ${artwork.dimensions.height}cm`}
+                    {artwork.dimensions.depth &&
+                      ` | Depth: ${artwork.dimensions.depth}cm`}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-4">
+                <button
+                  onClick={handleAddToCart}
+                  className={`w-full py-3 px-6 rounded-md transition-colors flex items-center justify-center
+                    ${
+                      addedToCart
+                        ? "bg-green-500 text-white"
+                        : "bg-[#C5B073] text-white hover:bg-[#4A3F35]"
+                    }`}
+                >
+                  {addedToCart ? (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-5 h-5 mr-2" />
+                      Add to Cart
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleAddToWishlist}
+                  className={`w-full py-3 px-6 rounded-md transition-colors flex items-center justify-center
+                    ${
+                      addedToWishlist
+                        ? "bg-white text-[#C5B073] border-2 border-[#C5B073]"
+                        : "border-2 border-[#C5B073] text-[#C5B073] hover:bg-[#C5B073] hover:text-white"
+                    }`}
+                >
+                  <Heart
+                    className={`w-5 h-5 mr-2 ${
+                      addedToWishlist ? "fill-current" : ""
+                    }`}
+                  />
+                  {addedToWishlist ? "Added to Wishlist" : "Add to Wishlist"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
