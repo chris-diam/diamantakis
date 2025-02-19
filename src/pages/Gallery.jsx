@@ -43,7 +43,7 @@ const Gallery = () => {
       image: pouliaImage,
       title: "Painting collection",
       description: "FREEDOM IN DESIGN",
-      link: "/gallery",
+      link: "/paintings",
       details:
         "Capturing the grace and elegance of birds in flight, each piece is a testament to freedom and natural beauty.",
     },
