@@ -108,9 +108,12 @@ const ShoppingCart = () => {
                 <span>€{getCartTotal()}</span>
               </div>
             </div>
-            <button className="w-full bg-[#C5B073] text-white py-3 px-6 rounded-md hover:bg-[#4A3F35] transition-colors mt-6">
+            <Link
+              to="/checkout"
+              className="block w-full bg-[#C5B073] text-white py-3 px-6 rounded-md hover:bg-[#4A3F35] transition-colors mt-6 text-center"
+            >
               Proceed to Checkout
-            </button>
+            </Link>
           </div>
         </div>
       </div>

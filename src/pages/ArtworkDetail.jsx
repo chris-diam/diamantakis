@@ -40,10 +40,7 @@ const ArtworkDetail = () => {
   }, [id, cart, wishlist]);
 
   const handleAddToCart = () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    // No login requirement for cart
     addToCart(artwork);
     setAddedToCart(true);
     // Show temporary success message
@@ -51,10 +48,7 @@ const ArtworkDetail = () => {
   };
 
   const handleAddToWishlist = () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    // No login requirement for wishlist
     addToWishlist(artwork);
     setAddedToWishlist(true);
     // Show temporary success message

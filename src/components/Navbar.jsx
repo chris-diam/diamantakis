@@ -104,6 +104,12 @@ const Navbar = () => {
             >
               Paintings
             </Link>
+            <Link
+              to="/about"
+              className="text-[#4A3F35] hover:text-[#C5B073] transition-colors"
+            >
+              About
+            </Link>
           </div>
         </div>
       </nav>

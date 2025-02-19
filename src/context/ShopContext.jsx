@@ -1,65 +1,98 @@
 // src/context/ShopContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 
-const ShopContext = createContext();
+const ShopContext = createContext(null);
 
 export const ShopProvider = ({ children }) => {
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const { user } = useAuth();
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
 
-  const [wishlist, setWishlist] = useState(() => {
-    const savedWishlist = localStorage.getItem("wishlist");
-    return savedWishlist ? JSON.parse(savedWishlist) : [];
-  });
+  // Load cart and wishlist from localStorage on mount
+  useEffect(() => {
+    const loadGuestData = () => {
+      try {
+        const storedCart = localStorage.getItem("guestCart");
+        const storedWishlist = localStorage.getItem("guestWishlist");
+
+        if (storedCart) {
+          setCart(JSON.parse(storedCart));
+        }
+
+        if (storedWishlist) {
+          setWishlist(JSON.parse(storedWishlist));
+        }
+      } catch (error) {
+        console.error("Error loading guest data:", error);
+      }
+    };
+
+    const loadUserData = async () => {
+      // Load data from server if user is logged in
+      // This is where you'd make API calls to get user-specific cart/wishlist
+      // For now, we'll just use localStorage for both guests and logged-in users
+      loadGuestData();
+    };
+
+    if (user) {
+      loadUserData();
+    } else {
+      loadGuestData();
+    }
+  }, [user]);
 
   // Save to localStorage whenever cart or wishlist changes
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    try {
+      localStorage.setItem("guestCart", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
+    }
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    try {
+      localStorage.setItem("guestWishlist", JSON.stringify(wishlist));
+    } catch (error) {
+      console.error("Error saving wishlist to localStorage:", error);
+    }
   }, [wishlist]);
 
   const addToCart = (artwork) => {
-    setCart((prev) => {
-      const existingItem = prev.find((item) => item._id === artwork._id);
-      if (existingItem) {
-        return prev.map((item) =>
+    setCart((prevCart) => {
+      // Check if item already exists in cart
+      const itemExists = prevCart.some((item) => item._id === artwork._id);
+
+      if (itemExists) {
+        // Update quantity if item exists
+        return prevCart.map((item) =>
           item._id === artwork._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+      } else {
+        // Add new item with quantity 1
+        return [...prevCart, { ...artwork, quantity: 1 }];
       }
-      return [...prev, { ...artwork, quantity: 1 }];
     });
   };
 
   const removeFromCart = (artworkId) => {
-    setCart((prev) => prev.filter((item) => item._id !== artworkId));
+    setCart((prevCart) => prevCart.filter((item) => item._id !== artworkId));
   };
 
-  const updateCartQuantity = (artworkId, quantity) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item._id === artworkId
-          ? { ...item, quantity: Math.max(0, quantity) }
-          : item
+  const updateCartQuantity = (artworkId, newQuantity) => {
+    if (newQuantity < 1) {
+      removeFromCart(artworkId);
+      return;
+    }
+
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item._id === artworkId ? { ...item, quantity: newQuantity } : item
       )
     );
-  };
-
-  const addToWishlist = (artwork) => {
-    setWishlist((prev) => {
-      if (prev.find((item) => item._id === artwork._id)) return prev;
-      return [...prev, artwork];
-    });
-  };
-
-  const removeFromWishlist = (artworkId) => {
-    setWishlist((prev) => prev.filter((item) => item._id !== artworkId));
   };
 
   const clearCart = () => {
@@ -70,6 +103,33 @@ export const ShopProvider = ({ children }) => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
+  const addToWishlist = (artwork) => {
+    setWishlist((prevWishlist) => {
+      // Check if item already exists in wishlist
+      const itemExists = prevWishlist.some((item) => item._id === artwork._id);
+
+      if (itemExists) {
+        return prevWishlist;
+      } else {
+        return [...prevWishlist, artwork];
+      }
+    });
+  };
+
+  const removeFromWishlist = (artworkId) => {
+    setWishlist((prevWishlist) =>
+      prevWishlist.filter((item) => item._id !== artworkId)
+    );
+  };
+
+  const moveToCart = (artworkId) => {
+    const item = wishlist.find((item) => item._id === artworkId);
+    if (item) {
+      addToCart(item);
+      removeFromWishlist(artworkId);
+    }
+  };
+
   return (
     <ShopContext.Provider
       value={{
@@ -78,10 +138,11 @@ export const ShopProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateCartQuantity,
-        addToWishlist,
-        removeFromWishlist,
         clearCart,
         getCartTotal,
+        addToWishlist,
+        removeFromWishlist,
+        moveToCart,
       }}
     >
       {children}
