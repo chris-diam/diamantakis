@@ -7,17 +7,37 @@ import karaviImage from "../assets/karavi.jpeg";
 
 const Gallery = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const heroRef = useRef(null);
   const collectionsRef = useRef(null);
 
-  // Track scroll position for parallax effects
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Check on initial load
+    checkMobile();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Track scroll position for parallax effects, only if not mobile
   useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY);
+      if (!isMobile) {
+        setScrollPosition(window.scrollY);
+      }
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isMobile]);
 
   const collections = [
     {
@@ -56,36 +76,37 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 overflow-hidden">
-      {/* Hero Section with Parallax */}
+      {/* Hero Section with Parallax - responsive height for mobile */}
       <div
         ref={heroRef}
-        className="h-screen bg-cover rounded bg-center bg-no-repeat relative flex items-center"
+        className="min-h-[500px] h-[90vh] md:h-screen bg-cover rounded bg-center bg-no-repeat relative flex items-center"
         style={{
           backgroundImage: `url(${karaviImage})`,
+          backgroundAttachment: isMobile ? "scroll" : "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/30" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center text-white max-w-2xl mx-auto transform translate-y-[-30px]">
-            <h1 className="text-5xl md:text-7xl font-light tracking-wider mb-6">
+          <div className="text-center text-white max-w-2xl mx-auto transform translate-y-0 md:translate-y-[-30px]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-light tracking-wider mb-4 md:mb-6">
               Welcome to Our Gallery
             </h1>
-            <p className="text-xl md:text-2xl font-light mb-12 opacity-90">
+            <p className="text-lg sm:text-xl md:text-2xl font-light mb-8 md:mb-12 opacity-90">
               Discover Our Unique Collection
             </p>
             <button
               onClick={scrollToCollections}
-              className="px-8 py-4 border border-white text-white hover:bg-white hover:text-[#4A3F35] transition-all duration-300 text-lg tracking-wide"
+              className="px-6 py-3 md:px-8 md:py-4 border border-white text-white hover:bg-white hover:text-[#4A3F35] transition-all duration-300 text-base md:text-lg tracking-wide"
             >
               Explore Collections
             </button>
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce">
+        {/* Scroll indicator - hidden on smaller screens */}
+        <div className="absolute bottom-8 left-0 right-0 hidden md:flex justify-center animate-bounce">
           <svg
-            className="w-8 h-8 text-white"
+            className="w-6 h-6 md:w-8 md:h-8 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -100,10 +121,10 @@ const Gallery = () => {
         </div>
       </div>
 
-      {/* Main content - Collection showcase */}
-      <div ref={collectionsRef} className="py-24 bg-stone-50">
+      {/* Main content - Collection showcase with responsive spacing */}
+      <div ref={collectionsRef} className="py-12 md:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl text-center font-light text-[#4A3F35] mb-20">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-center font-light text-[#4A3F35] mb-10 md:mb-20">
             OUR COLLECTIONS
           </h2>
 
@@ -113,30 +134,34 @@ const Gallery = () => {
               className={`flex flex-col ${
                 index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
               } 
-                items-center mb-40 last:mb-16 overflow-hidden`}
+                items-center mb-16 sm:mb-24 md:mb-32 lg:mb-40 last:mb-8 last:md:mb-16 overflow-hidden`}
             >
-              {/* Image container with parallax effect */}
+              {/* Image container with responsive height and conditional parallax */}
               <div
-                className="w-full md:w-7/12 mb-12 md:mb-0 relative overflow-hidden rounded-lg"
+                className="w-full md:w-7/12 mb-8 md:mb-0 relative overflow-hidden rounded-lg"
                 style={{
-                  height: "80vh",
-                  maxHeight: "700px",
-                  transform: `translateY(${Math.min(
-                    (scrollPosition -
-                      (collectionsRef.current?.offsetTop || 0) +
-                      index * 400) *
-                      0.1,
-                    100
-                  )}px)`,
-                  opacity: Math.min(
-                    1,
-                    (scrollPosition -
-                      (collectionsRef.current?.offsetTop || 0) +
-                      index * 600 +
-                      300) /
-                      500
-                  ),
-                  transition: "transform 0.3s ease-out",
+                  height: isMobile ? "300px" : "50vh",
+                  maxHeight: isMobile ? "400px" : "700px",
+                  transform: !isMobile
+                    ? `translateY(${Math.min(
+                        (scrollPosition -
+                          (collectionsRef.current?.offsetTop || 0) +
+                          index * 400) *
+                          0.1,
+                        100
+                      )}px)`
+                    : "none",
+                  opacity: !isMobile
+                    ? Math.min(
+                        1,
+                        (scrollPosition -
+                          (collectionsRef.current?.offsetTop || 0) +
+                          index * 600 +
+                          300) /
+                          500
+                      )
+                    : 1,
+                  transition: !isMobile ? "transform 0.3s ease-out" : "none",
                 }}
               >
                 <img
@@ -146,52 +171,56 @@ const Gallery = () => {
                 />
               </div>
 
-              {/* Text container */}
+              {/* Text container with responsive spacing and conditional animations */}
               <div
                 className={`w-full md:w-5/12 ${
-                  index % 2 === 0 ? "md:pl-16" : "md:pr-16"
+                  index % 2 === 0 ? "md:pl-8 lg:pl-16" : "md:pr-8 lg:pr-16"
                 } 
-                  transform transition-all duration-700`}
+                  transform transition-all duration-700 mt-4 md:mt-0`}
                 style={{
-                  opacity: Math.min(
-                    1,
-                    (scrollPosition -
-                      (collectionsRef.current?.offsetTop || 0) +
-                      index * 600 +
-                      500) /
-                      500
-                  ),
-                  transform: `translateX(${
-                    index % 2 === 0
-                      ? Math.min(
-                          (scrollPosition -
-                            (collectionsRef.current?.offsetTop || 0) +
-                            index * 500) *
-                            0.1,
-                          0
-                        )
-                      : Math.max(
-                          (scrollPosition -
-                            (collectionsRef.current?.offsetTop || 0) +
-                            index * 500) *
-                            -0.1,
-                          0
-                        )
-                  }px)`,
+                  opacity: !isMobile
+                    ? Math.min(
+                        1,
+                        (scrollPosition -
+                          (collectionsRef.current?.offsetTop || 0) +
+                          index * 600 +
+                          500) /
+                          500
+                      )
+                    : 1,
+                  transform: !isMobile
+                    ? `translateX(${
+                        index % 2 === 0
+                          ? Math.min(
+                              (scrollPosition -
+                                (collectionsRef.current?.offsetTop || 0) +
+                                index * 500) *
+                                0.1,
+                              0
+                            )
+                          : Math.max(
+                              (scrollPosition -
+                                (collectionsRef.current?.offsetTop || 0) +
+                                index * 500) *
+                                -0.1,
+                              0
+                            )
+                      }px)`
+                    : "none",
                 }}
               >
-                <span className="block text-sm tracking-widest text-[#4A3F35] mb-4">
+                <span className="block text-xs sm:text-sm tracking-widest text-[#4A3F35] mb-2 sm:mb-4">
                   {collection.description}
                 </span>
-                <h3 className="text-3xl md:text-4xl font-light text-[#4A3F35] mb-6 tracking-wide">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#4A3F35] mb-3 sm:mb-6 tracking-wide">
                   {collection.title}
                 </h3>
-                <p className="text-[#4A3F35]/80 mb-8 font-light leading-relaxed">
+                <p className="text-[#4A3F35]/80 mb-6 sm:mb-8 font-light leading-relaxed text-sm sm:text-base">
                   {collection.details}
                 </p>
                 <Link
                   to={collection.link}
-                  className="inline-block px-6 py-3 bg-[#4A3F35] text-white hover:bg-[#5a4f45] transition-colors duration-300"
+                  className="inline-block px-4 py-2 sm:px-6 sm:py-3 bg-[#4A3F35] text-white hover:bg-[#5a4f45] transition-colors duration-300 text-sm sm:text-base"
                 >
                   Explore
                 </Link>
@@ -201,26 +230,26 @@ const Gallery = () => {
         </div>
       </div>
 
-      {/* Call to action section */}
+      {/* Call to action section with responsive text and proper mobile background attachment */}
       <div
-        className="py-24 bg-cover bg-center relative"
+        className="py-16 md:py-24 bg-cover bg-center relative"
         style={{
           backgroundImage: `url(${karaviImage})`,
-          backgroundAttachment: "fixed",
+          backgroundAttachment: isMobile ? "scroll" : "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-light text-white mb-8 max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white mb-4 sm:mb-8 max-w-4xl mx-auto">
             Discover the Artistry Behind Each Collection
           </h2>
-          <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto font-light">
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 md:mb-12 max-w-2xl mx-auto font-light">
             Each piece tells a story of craftsmanship, heritage, and timeless
             beauty
           </p>
           <Link
             to="/about"
-            className="inline-block px-8 py-4 bg-white text-[#4A3F35] hover:bg-[#4A3F35] hover:text-white transition-colors duration-300 text-lg"
+            className="inline-block px-6 py-3 sm:px-8 sm:py-4 bg-white text-[#4A3F35] hover:bg-[#4A3F35] hover:text-white transition-colors duration-300 text-base sm:text-lg"
           >
             Learn Our Story
           </Link>

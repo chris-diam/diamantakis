@@ -1,4 +1,4 @@
-// src/App.js with Stripe integration
+// src/App.js with responsive container fixes
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -27,28 +27,134 @@ function App() {
       <AuthProvider>
         <ShopProvider>
           <StripeProvider>
-            <div className="min-h-screen bg-stone-50">
+            <div className="min-h-screen bg-stone-50 flex flex-col overflow-x-hidden">
               <Navbar />
-              <main className="container mx-auto px-4 py-8">
+              {/* Adjusted main container with proper padding for mobile */}
+              <main className="flex-1 w-full px-4 sm:px-6 py-4 sm:py-6 md:py-8">
                 <Routes>
-                  <Route path="/" element={<Gallery />} />
-                  <Route path="/gallery" element={<Gallery />} />
-                  <Route path="/sculptures" element={<Sculptures />} />
-                  <Route path="/jewelry" element={<Jewelry />} />
-                  <Route path="/paintings" element={<Paintings />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/artwork/:id" element={<ArtworkDetail />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/cart" element={<ShoppingCart />} />
-                  <Route path="/checkout" element={<Checkout />} />
+                  {/* Gallery is full-width to accommodate the design */}
+                  <Route
+                    path="/"
+                    element={
+                      <div className="w-full">
+                        <Gallery />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/gallery"
+                    element={
+                      <div className="w-full">
+                        <Gallery />
+                      </div>
+                    }
+                  />
+
+                  {/* Other pages get the container class for consistent sizing */}
+                  <Route
+                    path="/sculptures"
+                    element={
+                      <div className="container mx-auto">
+                        <Sculptures />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/jewelry"
+                    element={
+                      <div className="container mx-auto">
+                        <Jewelry />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/paintings"
+                    element={
+                      <div className="container mx-auto">
+                        <Paintings />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/contact"
+                    element={
+                      <div className="container mx-auto max-w-4xl">
+                        <Contact />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/artwork/:id"
+                    element={
+                      <div className="container mx-auto">
+                        <ArtworkDetail />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/login"
+                    element={
+                      <div className="container mx-auto max-w-md">
+                        <Login />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/register"
+                    element={
+                      <div className="container mx-auto max-w-md">
+                        <Register />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <div className="container mx-auto">
+                        <Profile />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/cart"
+                    element={
+                      <div className="container mx-auto">
+                        <ShoppingCart />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <div className="container mx-auto max-w-4xl">
+                        <Checkout />
+                      </div>
+                    }
+                  />
                   <Route
                     path="/payment-confirmation"
-                    element={<PaymentConfirmation />}
+                    element={
+                      <div className="container mx-auto max-w-lg">
+                        <PaymentConfirmation />
+                      </div>
+                    }
                   />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/about" element={<About />} />
+                  <Route
+                    path="/wishlist"
+                    element={
+                      <div className="container mx-auto">
+                        <Wishlist />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/about"
+                    element={
+                      <div className="container mx-auto">
+                        <About />
+                      </div>
+                    }
+                  />
                 </Routes>
               </main>
               <Footer />
