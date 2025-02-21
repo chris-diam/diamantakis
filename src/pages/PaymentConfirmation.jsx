@@ -4,11 +4,13 @@ import { Link, useSearchParams, Navigate } from "react-router-dom";
 import { useStripe } from "@stripe/react-stripe-js";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import { useShop } from "../context/ShopContext";
+import { useAuth } from "../context/AuthContext"; // Add this if you have an auth context
 
 const PaymentConfirmation = () => {
   const [searchParams] = useSearchParams();
   const stripe = useStripe();
   const { clearCart } = useShop();
+  const { user } = useAuth(); // Get user from auth context if available
 
   const [status, setStatus] = useState("processing");
   const [paymentIntent, setPaymentIntent] = useState(null);
@@ -137,12 +139,21 @@ const PaymentConfirmation = () => {
           >
             Continue Shopping
           </Link>
-          <Link
-            to="/profile"
-            className="px-6 py-3 bg-white text-[#4A3F35] border border-[#4A3F35] rounded-md hover:bg-stone-50 transition-colors"
-          >
-            View Your Account
-          </Link>
+          {user ? (
+            <Link
+              to="/profile"
+              className="px-6 py-3 bg-white text-[#4A3F35] border border-[#4A3F35] rounded-md hover:bg-stone-50 transition-colors"
+            >
+              View Your Account
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="px-6 py-3 bg-white text-[#4A3F35] border border-[#4A3F35] rounded-md hover:bg-stone-50 transition-colors"
+            >
+              Create an Account
+            </Link>
+          )}
         </div>
       </div>
     </div>

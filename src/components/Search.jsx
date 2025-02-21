@@ -14,7 +14,8 @@ import { useNavigate } from "react-router-dom";
 
 const Search = ({ isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState([]);
+  const [allResults, setAllResults] = useState([]); // Store all fetched results
+  const [filteredResults, setFilteredResults] = useState([]); // Store filtered results
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
@@ -30,6 +31,7 @@ const Search = ({ isOpen, onClose }) => {
     width: { min: "", max: "" },
     height: { min: "", max: "" },
   });
+  const [networkError, setNetworkError] = useState(false);
 
   const searchRef = useRef(null);
   const resultsRef = useRef(null);
@@ -86,18 +88,18 @@ const Search = ({ isOpen, onClose }) => {
         setShowHistory(false);
         setSelectedIndex(-1);
       }
-    } else if (results.length > 0) {
+    } else if (filteredResults.length > 0) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) => {
           const newIndex =
             e.key === "ArrowDown"
-              ? Math.min(prev + 1, results.length - 1)
+              ? Math.min(prev + 1, filteredResults.length - 1)
               : Math.max(prev - 1, 0);
           return newIndex;
         });
       } else if (e.key === "Enter" && selectedIndex >= 0) {
-        handleResultClick(results[selectedIndex]);
+        handleResultClick(filteredResults[selectedIndex]);
       }
     }
 
@@ -136,57 +138,383 @@ const Search = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
+  // Fetch data with CORS handling and caching
   useEffect(() => {
-    const fetchResults = async () => {
-      if (
-        !searchTerm.trim() &&
-        selectedCategory === "all" &&
-        !priceRange.min &&
-        !priceRange.max &&
-        materialFilter.length === 0
-      ) {
-        setResults([]);
-        return;
-      }
+    // Key part to fix - don't send search term to the server at all
+    // Replace your entire fetchResults function with this:
 
+    const fetchResults = async () => {
       setLoading(true);
+      setNetworkError(false);
+
       try {
+        // Only try to fetch data once per session to avoid rate limiting
+        // Check if we already have data in sessionStorage
+        const sessionData = sessionStorage.getItem("artworks_data");
+
+        if (sessionData) {
+          console.log("Using cached session data");
+          const parsedData = JSON.parse(sessionData);
+          setAllResults(parsedData);
+          setLoading(false);
+          return;
+        }
+
+        // If no cached data, make one clean request without any parameters
         let url = new URL(
           "https://diamantakis-server.onrender.com/api/v1/artworks"
         );
-        let params = new URLSearchParams();
 
-        if (searchTerm.trim()) params.append("search", searchTerm);
-        if (selectedCategory !== "all")
-          params.append("category", selectedCategory);
-        if (priceRange.min) params.append("minPrice", priceRange.min);
-        if (priceRange.max) params.append("maxPrice", priceRange.max);
-        if (materialFilter.length > 0)
-          params.append("materials", materialFilter.join(","));
-        if (sortBy) params.append("sort", sortBy);
+        // IMPORTANT: DO NOT add any search parameters to avoid CORS
+        // Let params be empty - we'll filter client-side
 
-        Object.entries(dimensionRange).forEach(([dimension, range]) => {
-          if (range.min) params.append(`min${dimension}`, range.min);
-          if (range.max) params.append(`max${dimension}`, range.max);
-        });
+        try {
+          console.log("Fetching all artworks without parameters");
+          const response = await fetch(url, {
+            mode: "cors",
+            credentials: "omit",
+            headers: {
+              Accept: "application/json",
+            },
+          });
 
-        url.search = params.toString();
-        const response = await fetch(url);
-        const data = await response.json();
-        setResults(data.data.artworks);
-        setSelectedIndex(-1);
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (!data.data || !Array.isArray(data.data.artworks)) {
+            throw new Error("Invalid data format from server");
+          }
+
+          // Cache the data in sessionStorage to avoid repeated requests
+          sessionStorage.setItem(
+            "artworks_data",
+            JSON.stringify(data.data.artworks)
+          );
+
+          // Set all results
+          setAllResults(data.data.artworks);
+        } catch (fetchError) {
+          console.error("Fetch error:", fetchError);
+          setNetworkError(true);
+
+          // Fallback to empty results
+          setAllResults([]);
+        }
       } catch (error) {
         console.error("Search error:", error);
-        setResults([]);
+        setNetworkError(true);
+        setAllResults([]);
       } finally {
         setLoading(false);
       }
     };
 
+    // Call this function only once when the component mounts
+    useEffect(() => {
+      fetchResults();
+      // No dependencies - only call once
+    }, []);
+
+    // All filtering happens client-side only
+    useEffect(() => {
+      if (!allResults.length) return;
+
+      // Apply all filters client-side
+      let filtered = [...allResults];
+
+      // Apply search term filter
+      if (searchTerm.trim()) {
+        const normalizedTerm = searchTerm.toLowerCase().trim();
+        filtered = filtered.filter((artwork) => {
+          return (
+            (artwork.title &&
+              artwork.title.toLowerCase().includes(normalizedTerm)) ||
+            (artwork.description &&
+              artwork.description.toLowerCase().includes(normalizedTerm)) ||
+            (artwork.category &&
+              artwork.category.toLowerCase().includes(normalizedTerm)) ||
+            (artwork.materials &&
+              Array.isArray(artwork.materials) &&
+              artwork.materials.some((m) =>
+                m.toLowerCase().includes(normalizedTerm)
+              ))
+          );
+        });
+      }
+
+      // Other filters (category, price, materials, dimensions)
+      if (selectedCategory !== "all") {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.category &&
+            artwork.category.toLowerCase() === selectedCategory.toLowerCase()
+        );
+      }
+
+      // Price filter
+      if (priceRange.min) {
+        filtered = filtered.filter(
+          (artwork) => artwork.price >= parseInt(priceRange.min, 10)
+        );
+      }
+      if (priceRange.max) {
+        filtered = filtered.filter(
+          (artwork) => artwork.price <= parseInt(priceRange.max, 10)
+        );
+      }
+
+      // Material filter
+      if (materialFilter.length > 0) {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.materials &&
+            materialFilter.some((material) =>
+              artwork.materials
+                .map((m) => m.toLowerCase())
+                .includes(material.toLowerCase())
+            )
+        );
+      }
+
+      // Dimension filters
+      if (dimensionRange.width.min) {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.dimensions &&
+            artwork.dimensions.width >= parseInt(dimensionRange.width.min, 10)
+        );
+      }
+      if (dimensionRange.width.max) {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.dimensions &&
+            artwork.dimensions.width <= parseInt(dimensionRange.width.max, 10)
+        );
+      }
+      if (dimensionRange.height.min) {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.dimensions &&
+            artwork.dimensions.height >= parseInt(dimensionRange.height.min, 10)
+        );
+      }
+      if (dimensionRange.height.max) {
+        filtered = filtered.filter(
+          (artwork) =>
+            artwork.dimensions &&
+            artwork.dimensions.height <= parseInt(dimensionRange.height.max, 10)
+        );
+      }
+
+      // Apply sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case "priceAsc":
+            return a.price - b.price;
+          case "priceDesc":
+            return b.price - a.price;
+          case "nameAsc":
+            return (a.title || "").localeCompare(b.title || "");
+          case "nameDesc":
+            return (b.title || "").localeCompare(a.title || "");
+          case "newest":
+          default:
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        }
+      });
+
+      setFilteredResults(filtered);
+      setSelectedIndex(-1);
+    }, [
+      searchTerm,
+      allResults,
+      selectedCategory,
+      priceRange,
+      materialFilter,
+      dimensionRange,
+      sortBy,
+    ]);
+
     const debounceTimer = setTimeout(fetchResults, 300);
     return () => clearTimeout(debounceTimer);
+  }, [selectedCategory, priceRange, materialFilter, dimensionRange, sortBy]);
+
+  // Client-side search filtering effect
+  useEffect(() => {
+    const fetchAllArtworks = async () => {
+      setLoading(true);
+      setNetworkError(false);
+
+      try {
+        // Check if we already have data in sessionStorage
+        const sessionData = sessionStorage.getItem("artworks_data");
+
+        if (sessionData) {
+          console.log("Using cached session data");
+          const parsedData = JSON.parse(sessionData);
+          setAllResults(parsedData);
+          setLoading(false);
+          return;
+        }
+
+        // If no cached data, make one clean request without any parameters
+        let url = new URL(
+          "https://diamantakis-server.onrender.com/api/v1/artworks"
+        );
+
+        // IMPORTANT: DO NOT add any search parameters to avoid CORS
+
+        const response = await fetch(url, {
+          mode: "cors",
+          credentials: "omit",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Cache the data in sessionStorage
+        sessionStorage.setItem(
+          "artworks_data",
+          JSON.stringify(data.data.artworks)
+        );
+
+        // Set all results
+        setAllResults(data.data.artworks);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setNetworkError(true);
+        setAllResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllArtworks();
+  }, []); // Empty dependency array - only run once when component mounts
+
+  // All filtering happens client-side in a separate effect
+  useEffect(() => {
+    if (!allResults.length) return;
+
+    // Filter the data client-side based on all criteria
+    let filtered = [...allResults];
+
+    // Search term filtering
+    if (searchTerm.trim()) {
+      const normalizedTerm = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((artwork) => {
+        return (
+          (artwork.title &&
+            artwork.title.toLowerCase().includes(normalizedTerm)) ||
+          (artwork.description &&
+            artwork.description.toLowerCase().includes(normalizedTerm)) ||
+          (artwork.category &&
+            artwork.category.toLowerCase().includes(normalizedTerm)) ||
+          (artwork.materials &&
+            Array.isArray(artwork.materials) &&
+            artwork.materials.some((m) =>
+              m.toLowerCase().includes(normalizedTerm)
+            ))
+        );
+      });
+    }
+
+    // Apply category filter (if not already applied server-side)
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.category &&
+          artwork.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    // Apply price filter (if not already applied server-side)
+    if (priceRange.min) {
+      filtered = filtered.filter(
+        (artwork) => artwork.price >= parseInt(priceRange.min, 10)
+      );
+    }
+    if (priceRange.max) {
+      filtered = filtered.filter(
+        (artwork) => artwork.price <= parseInt(priceRange.max, 10)
+      );
+    }
+
+    // Apply material filter
+    if (materialFilter.length > 0) {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.materials &&
+          materialFilter.some((material) =>
+            artwork.materials
+              .map((m) => m.toLowerCase())
+              .includes(material.toLowerCase())
+          )
+      );
+    }
+
+    // Apply dimension filters
+    if (dimensionRange.width.min) {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.dimensions &&
+          artwork.dimensions.width >= parseInt(dimensionRange.width.min, 10)
+      );
+    }
+    if (dimensionRange.width.max) {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.dimensions &&
+          artwork.dimensions.width <= parseInt(dimensionRange.width.max, 10)
+      );
+    }
+    if (dimensionRange.height.min) {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.dimensions &&
+          artwork.dimensions.height >= parseInt(dimensionRange.height.min, 10)
+      );
+    }
+    if (dimensionRange.height.max) {
+      filtered = filtered.filter(
+        (artwork) =>
+          artwork.dimensions &&
+          artwork.dimensions.height <= parseInt(dimensionRange.height.max, 10)
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "priceAsc":
+          return a.price - b.price;
+        case "priceDesc":
+          return b.price - a.price;
+        case "nameAsc":
+          return (a.title || "").localeCompare(b.title || "");
+        case "nameDesc":
+          return (b.title || "").localeCompare(a.title || "");
+        case "newest":
+        default:
+          // Assuming createdAt is a date string or timestamp
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      }
+    });
+
+    setFilteredResults(filtered);
+    setSelectedIndex(-1);
   }, [
     searchTerm,
+    allResults,
     selectedCategory,
     priceRange,
     materialFilter,
@@ -254,6 +582,16 @@ const Search = ({ isOpen, onClose }) => {
                 </button>
               </div>
             </div>
+
+            {/* Network Error Notice */}
+            {networkError && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-amber-800 text-sm">
+                  There was an issue connecting to the server. Search results
+                  may be limited or unavailable.
+                </p>
+              </div>
+            )}
 
             {/* Search History */}
             {showHistory && searchHistory.length > 0 && (
@@ -490,9 +828,9 @@ const Search = ({ isOpen, onClose }) => {
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#C5B073] border-t-transparent"></div>
                 </div>
-              ) : results.length > 0 ? (
+              ) : filteredResults.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {results.map((artwork, index) => (
+                  {filteredResults.map((artwork, index) => (
                     <div
                       key={artwork._id}
                       onClick={() => handleResultClick(artwork)}
@@ -506,6 +844,10 @@ const Search = ({ isOpen, onClose }) => {
                             src={`data:${artwork.images[0].contentType};base64,${artwork.images[0].data}`}
                             alt={artwork.title}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://placehold.co/400x400/E5DED5/4A3F35?text=Image+Unavailable";
+                            }}
                           />
                         </div>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
