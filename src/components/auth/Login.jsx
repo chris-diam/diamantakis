@@ -1,9 +1,12 @@
+// src/components/auth/Login.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { login } from "../../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,17 +27,12 @@ const Login = () => {
       });
 
       if (response.token) {
-        // Store token
         localStorage.setItem("token", response.token);
-
-        // Store email in localStorage if "remember me" is checked
         if (formData.remember) {
           localStorage.setItem("rememberedEmail", formData.email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
-
-        // Redirect to home page
         navigate("/");
       }
     } catch (err) {
@@ -48,7 +46,7 @@ const Login = () => {
     <div className="max-w-md mx-auto mt-8">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-semibold text-center text-[#4A3F35] mb-6">
-          Login
+          {t("auth.login.title")}
         </h1>
 
         {error && (
@@ -60,7 +58,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Email address
+              {t("auth.login.email")}
             </label>
             <input
               type="email"
@@ -75,7 +73,7 @@ const Login = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Password
+              {t("auth.login.password")}
             </label>
             <input
               type="password"
@@ -99,14 +97,14 @@ const Login = () => {
                 }
               />
               <label className="ml-2 block text-sm text-[#4A3F35]">
-                Remember me
+                {t("auth.login.rememberMe")}
               </label>
             </div>
             <Link
               to="/forgot-password"
               className="text-sm text-[#C5B073] hover:text-[#4A3F35]"
             >
-              Forgot your password?
+              {t("auth.login.forgotPassword")}
             </Link>
           </div>
 
@@ -117,18 +115,18 @@ const Login = () => {
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? t("auth.login.signingIn") : t("auth.login.signIn")}
           </button>
 
           <div className="text-center mt-4">
             <span className="text-sm text-[#4A3F35]">
-              Don't have an account?{" "}
+              {t("auth.login.noAccount")}{" "}
             </span>
             <Link
               to="/register"
               className="text-sm text-[#C5B073] hover:text-[#4A3F35]"
             >
-              Register here
+              {t("auth.login.registerHere")}
             </Link>
           </div>
         </form>

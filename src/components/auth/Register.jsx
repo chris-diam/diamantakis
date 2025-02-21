@@ -1,9 +1,12 @@
+// src/components/auth/Register.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { register } from "../../services/authService";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,30 +22,28 @@ const Register = () => {
 
   const validateForm = () => {
     if (!formData.username || formData.username.trim() === "") {
-      setError("Username is required");
+      setError(t("auth.validation.required"));
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("auth.validation.passwordMatch"));
       return false;
     }
 
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError(t("auth.validation.passwordLength"));
       return false;
     }
 
-    // Basic username validation
     if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      setError("Username can only contain letters, numbers, and underscores");
+      setError(t("auth.validation.usernameFormat"));
       return false;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address");
+      setError(t("auth.validation.emailFormat"));
       return false;
     }
 
@@ -85,7 +86,7 @@ const Register = () => {
     <div className="max-w-md mx-auto mt-8">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-semibold text-center text-[#4A3F35] mb-6">
-          Register
+          {t("auth.register.title")}
         </h1>
 
         {error && (
@@ -98,7 +99,7 @@ const Register = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#4A3F35]">
-                First Name
+                {t("auth.register.firstName")}
               </label>
               <input
                 type="text"
@@ -112,7 +113,7 @@ const Register = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#4A3F35]">
-                Last Name
+                {t("auth.register.lastName")}
               </label>
               <input
                 type="text"
@@ -128,7 +129,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Username
+              {t("auth.register.username")}
             </label>
             <input
               type="text"
@@ -139,13 +140,13 @@ const Register = () => {
                 setFormData({ ...formData, username: e.target.value.trim() })
               }
               pattern="^[a-zA-Z0-9_]+$"
-              title="Username can only contain letters, numbers, and underscores"
+              title={t("auth.validation.usernameFormat")}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Display Name
+              {t("auth.register.displayName")}
             </label>
             <input
               type="text"
@@ -159,7 +160,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Email
+              {t("auth.register.email")}
             </label>
             <input
               type="email"
@@ -174,7 +175,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Password
+              {t("auth.register.password")}
             </label>
             <input
               type="password"
@@ -190,7 +191,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A3F35]">
-              Confirm Password
+              {t("auth.register.confirmPassword")}
             </label>
             <input
               type="password"
@@ -214,8 +215,7 @@ const Register = () => {
               }
             />
             <label className="ml-2 block text-sm text-[#4A3F35]">
-              I agree to the collection and processing of my personal data in
-              accordance with the GDPR.
+              {t("auth.register.gdprConsent")}
             </label>
           </div>
 
@@ -226,18 +226,20 @@ const Register = () => {
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading
+              ? t("auth.register.creatingAccount")
+              : t("auth.register.createAccount")}
           </button>
 
           <div className="text-center mt-4">
             <span className="text-sm text-[#4A3F35]">
-              Already have an account?{" "}
+              {t("auth.register.haveAccount")}{" "}
             </span>
             <Link
               to="/login"
               className="text-sm text-[#C5B073] hover:text-[#4A3F35]"
             >
-              Login here
+              {t("auth.register.loginHere")}
             </Link>
           </div>
         </form>

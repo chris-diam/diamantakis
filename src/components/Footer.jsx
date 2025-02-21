@@ -1,8 +1,11 @@
+// src/components/Footer.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Instagram, Facebook, Twitter } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
 
   const handleSubscribe = (e) => {
@@ -18,23 +21,20 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">About Our Gallery</h3>
-            <p className="text-stone-300">
-              Discover unique artworks from talented artists around the world.
-              We curate the finest pieces of sculptures, jewelry, and paintings.
-            </p>
+            <h3 className="text-lg font-semibold">{t("footer.aboutTitle")}</h3>
+            <p className="text-stone-300">{t("footer.aboutText")}</p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Quick Links</h3>
+            <h3 className="text-lg font-semibold">{t("footer.quickLinks")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   to="/gallery"
                   className="hover:text-white transition-colors"
                 >
-                  Gallery
+                  {t("navigation.gallery")}
                 </Link>
               </li>
               <li>
@@ -42,7 +42,7 @@ const Footer = () => {
                   to="/sculptures"
                   className="hover:text-white transition-colors"
                 >
-                  Sculptures
+                  {t("navigation.sculptures")}
                 </Link>
               </li>
               <li>
@@ -50,7 +50,7 @@ const Footer = () => {
                   to="/jewelry"
                   className="hover:text-white transition-colors"
                 >
-                  Jewelry
+                  {t("navigation.jewelry")}
                 </Link>
               </li>
               <li>
@@ -58,7 +58,7 @@ const Footer = () => {
                   to="/paintings"
                   className="hover:text-white transition-colors"
                 >
-                  Paintings
+                  {t("navigation.paintings")}
                 </Link>
               </li>
               <li>
@@ -66,7 +66,7 @@ const Footer = () => {
                   to="/contact"
                   className="hover:text-white transition-colors"
                 >
-                  Contact
+                  {t("navigation.contact")}
                 </Link>
               </li>
             </ul>
@@ -74,17 +74,15 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Newsletter</h3>
-            <p className="text-stone-300">
-              Subscribe to receive updates about new artworks and exhibitions.
-            </p>
+            <h3 className="text-lg font-semibold">{t("footer.newsletter")}</h3>
+            <p className="text-stone-300">{t("footer.newsletterText")}</p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <div className="flex">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder={t("footer.enterEmail")}
                   className="px-4 py-2 rounded-l bg-stone-700 text-white w-full focus:outline-none focus:ring-2 focus:ring-stone-400"
                   required
                 />
@@ -92,7 +90,7 @@ const Footer = () => {
                   type="submit"
                   className="bg-stone-600 px-4 py-2 rounded-r hover:bg-stone-500 transition-colors"
                 >
-                  Subscribe
+                  {t("footer.subscribeButton")}
                 </button>
               </div>
             </form>
@@ -100,37 +98,56 @@ const Footer = () => {
 
           {/* Social & Contact */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Connect With Us</h3>
+            <h3 className="text-lg font-semibold">
+              {t("footer.connectWithUs")}
+            </h3>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+                aria-label="Instagram"
+              >
                 <Instagram size={24} />
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+                aria-label="Facebook"
+              >
                 <Facebook size={24} />
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+                aria-label="Twitter"
+              >
                 <Twitter size={24} />
               </a>
               <a
                 href="mailto:contact@artgallery.com"
                 className="hover:text-white transition-colors"
+                aria-label="Email"
               >
                 <Mail size={24} />
               </a>
             </div>
             <div className="text-stone-300">
-              <p>123 Art Street</p>
-              <p>Art City, AC 12345</p>
-              <p>Tel: (555) 123-4567</p>
+              <p>{t("footer.address")}</p>
+              <p>{t("footer.city")}</p>
+              <p>{t("footer.phone")}</p>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-stone-700 mt-8 pt-8 text-center text-stone-400">
-          <p>
-            &copy; {new Date().getFullYear()} Art Gallery. All rights reserved.
-          </p>
+          <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </footer>

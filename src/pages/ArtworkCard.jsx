@@ -1,9 +1,11 @@
 // src/components/ArtworkCard.jsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const ArtworkCard = ({ artwork }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     navigate(`/artwork/${artwork._id}`);
@@ -26,10 +28,14 @@ const ArtworkCard = ({ artwork }) => {
         </div>
         <div className="space-y-2">
           <h3 className="font-semibold text-lg text-gray-800">
-            {artwork.title}
+            {t("artwork.title", { title: artwork.title })}
           </h3>
-          <p className="text-sm text-gray-600">{artwork.description}</p>
-          <p className="text-amber-700 font-medium">€{artwork.price}</p>
+          <p className="text-sm text-gray-600">
+            {t("artwork.description", { description: artwork.description })}
+          </p>
+          <p className="text-amber-700 font-medium">
+            {t("artwork.price", { price: artwork.price })}
+          </p>
         </div>
       </div>
     </div>

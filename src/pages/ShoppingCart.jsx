@@ -3,9 +3,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useShop } from "../context/ShopContext";
+import { useTranslation } from "react-i18next";
+import { getTranslatedContent } from "../services/translationService";
 
 const ShoppingCart = () => {
   const { cart, removeFromCart, updateCartQuantity, getCartTotal } = useShop();
+  const { t, i18n } = useTranslation();
 
   if (cart.length === 0) {
     return (
@@ -13,13 +16,13 @@ const ShoppingCart = () => {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="text-2xl font-light text-[#4A3F35] mb-4">
-              Your Shopping Bag is Empty
+              {t("cart.empty")}
             </h2>
             <Link
               to="/gallery"
               className="inline-block bg-[#C5B073] text-white px-6 py-3 rounded-md hover:bg-[#4A3F35] transition-colors"
             >
-              Continue Shopping
+              {t("cart.continueShopping")}
             </Link>
           </div>
         </div>
@@ -31,11 +34,10 @@ const ShoppingCart = () => {
     <div className="min-h-screen bg-stone-50 py-12">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-light text-[#4A3F35] mb-8">
-          Shopping Bag
+          {t("cart.shoppingBag")}
         </h1>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Cart Items */}
           <div className="md:col-span-2 space-y-4">
             {cart.map((item) => (
               <div
@@ -45,15 +47,21 @@ const ShoppingCart = () => {
                 <div className="w-24 h-24">
                   <img
                     src={`data:${item.images[0].contentType};base64,${item.images[0].data}`}
-                    alt={item.title}
+                    alt={getTranslatedContent(
+                      item.title,
+                      "title",
+                      i18n.language
+                    )}
                     className="w-full h-full object-cover rounded-md"
                   />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-medium text-[#4A3F35]">
-                    {item.title}
+                    {getTranslatedContent(item.title, "title", i18n.language)}
                   </h3>
-                  <p className="text-[#C5B073]">€{item.price}</p>
+                  <p className="text-[#C5B073]">
+                    {t("artwork.price", { price: item.price })}
+                  </p>
 
                   <div className="flex items-center mt-4 space-x-4">
                     <div className="flex items-center space-x-2">
@@ -90,29 +98,29 @@ const ShoppingCart = () => {
           {/* Order Summary */}
           <div className="bg-white rounded-lg shadow-sm p-6 h-fit">
             <h2 className="text-xl font-medium text-[#4A3F35] mb-4">
-              Order Summary
+              {t("cart.orderSummary")}
             </h2>
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>€{getCartTotal()}</span>
+                <span>{t("cart.subtotal")}</span>
+                <span>{t("artwork.price", { price: getCartTotal() })}</span>
               </div>
               <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>Free</span>
+                <span>{t("cart.shipping")}</span>
+                <span>{t("cart.free")}</span>
               </div>
             </div>
             <div className="border-t pt-4">
               <div className="flex justify-between font-medium">
-                <span>Total</span>
-                <span>€{getCartTotal()}</span>
+                <span>{t("cart.total")}</span>
+                <span>{t("artwork.price", { price: getCartTotal() })}</span>
               </div>
             </div>
             <Link
               to="/checkout"
               className="block w-full bg-[#C5B073] text-white py-3 px-6 rounded-md hover:bg-[#4A3F35] transition-colors mt-6 text-center"
             >
-              Proceed to Checkout
+              {t("cart.proceedToCheckout")}
             </Link>
           </div>
         </div>
